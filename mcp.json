@@ -1,20 +1,26 @@
 {
   "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
     "confluence": {
       "command": "node",
       "args": [
         "src/mcp-servers/confluence/index.js"
       ],
       "env": {
-        "CONFLUENCE_BASE_URL": "https://bahuddurshashaik.atlassian.net/wiki",
-        "CONFLUENCE_EMAIL": "",
-        "CONFLUENCE_API_TOKEN": "",
-        "CONFLUENCE_SPACE_KEY": "ClaudeCpas"
-      },
-      "description": "Confluence MCP server for reading and writing user stories, requirements, and documentation",
-      "disabled": false
+        "CONFLUENCE_BASE_URL": "${CONFLUENCE_BASE_URL}",
+        "CONFLUENCE_EMAIL": "${CONFLUENCE_EMAIL}",
+        "CONFLUENCE_API_TOKEN": "${CONFLUENCE_API_TOKEN}",
+        "CONFLUENCE_SPACE_KEY": "${CONFLUENCE_SPACE_KEY}"
+      }
     }
-  },
-  "version": "1.0.0",
-  "description": "MCP server configuration for Agentic SDLC Capstone Project"
+  }
 }

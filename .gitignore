@@ -41,3 +41,13 @@ temp/
 
 # Claude Code
 .claude/local/
+.claude/settings.json
+.claude/settings.local.json
+
+# MCP Servers - Secrets
+src/mcp-servers/confluence/.env
+src/mcp-servers/**/secrets/
+*.token
+
+# GitHub Token
+.github-token

@@ -1,0 +1,26 @@
+{
+  "name": "hotel-booking-system",
+  "version": "1.0.0",
+  "description": "Basic hotel booking system covering all 5 user stories",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "hotel",
+    "booking",
+    "reservation",
+    "agentic-sdlc"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2"
+  }
+}

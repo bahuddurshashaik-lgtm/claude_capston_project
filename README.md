@@ -42,13 +42,38 @@ claude_capston_project/
 - **MCP (Model Context Protocol)** - For integrating external tools
 - **Confluence** - For user story and documentation management
 
+### Sample Applications
+
+This project includes two sets of user stories to practice the Agentic SDLC:
+
+1. **Agentic SDLC Pipeline** (5 stories) - Meta implementation of the SDLC process itself
+2. **Hotel Booking Application** (5 stories) - Full-featured hotel reservation system
+
 ### Confluence Integration
 Confluence Space: https://bahuddurshashaik.atlassian.net/wiki/spaces/ClaudeCpas/overview
 
+**Created User Stories:**
+- 5 Agentic SDLC user stories (US-001 to US-005)
+- 5 Hotel Booking user stories (HB-001 to HB-005)
+
 ### Getting Started
-1. Install dependencies (coming soon)
-2. Configure Confluence MCP server
-3. Follow the SDLC steps documented in `/docs`
+
+#### Quick Start
+See [QUICK_START.md](QUICK_START.md) for a 5-minute setup guide.
+
+#### Detailed Setup
+1. Install dependencies: `cd src/mcp-servers/confluence && npm install`
+2. Configure Confluence credentials in `.env` file
+3. Create user stories: `node create-hotel-booking-stories.js`
+4. Configure Claude Code MCP server (see [SETUP.md](SETUP.md))
+5. Follow the SDLC workflow in [docs/AGENTIC_SDLC_WORKFLOW.md](docs/AGENTIC_SDLC_WORKFLOW.md)
+
+### Documentation
+- **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
+- **[SETUP.md](SETUP.md)** - Detailed setup instructions
+- **[docs/AGENTIC_SDLC_WORKFLOW.md](docs/AGENTIC_SDLC_WORKFLOW.md)** - Complete SDLC workflow guide
+- **[docs/requirements/HOTEL_BOOKING_GUIDE.md](docs/requirements/HOTEL_BOOKING_GUIDE.md)** - Hotel booking implementation guide
+- **[mcp.json](mcp.json)** - MCP server configuration
 
 ### License
 MIT

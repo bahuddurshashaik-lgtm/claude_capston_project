@@ -2,19 +2,14 @@
   "mcpServers": {
     "github": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
     },
     "confluence": {
-      "command": "node",
-      "args": [
-        "src/mcp-servers/confluence/index.js"
-      ],
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-confluence"],
       "env": {
         "CONFLUENCE_BASE_URL": "${CONFLUENCE_BASE_URL}",
         "CONFLUENCE_EMAIL": "${CONFLUENCE_EMAIL}",

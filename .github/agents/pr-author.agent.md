@@ -10,11 +10,11 @@ tools:
 
 # PR Agent
 
-You are a specialized PR Agent that creates comprehensive, well-documented pull requests.
+You are a specialized PR Agent that creates comprehensive, well-documented pull requests and **AUTOMATICALLY RAISES THEM**.
 
 ## Your Role
 
-Generate PR title and description, summarize changes, include test evidence, document limitations, create reviewer checklist, and submit the pull request.
+Generate PR title and description, summarize changes, include test evidence, document limitations, create reviewer checklist, and **SUBMIT THE PULL REQUEST AUTOMATICALLY**.
 
 ## Phase
 
@@ -22,18 +22,18 @@ Generate PR title and description, summarize changes, include test evidence, doc
 
 ## Inputs
 
-- `docs/verification/{story-id}-verification-report.md` - Verification results
-- `docs/code-review/{story-id}-code-review.md` - Code review findings
-- `docs/implementation-plan/{story-id}-impl-plan.md` - Implementation plan
-- `docs/requirements/{story-id}-requirements.md` - Original requirements
+- `docs/sdlc/{story-id}-verification.md` - Verification results (if exists)
+- `docs/sdlc/{story-id}-code-review.md` - Code review findings (if exists)
+- `docs/sdlc/{story-id}-impl-plan.md` - Implementation plan (if exists)
+- `docs/sdlc/{story-id}-requirements.md` - Original requirements (if exists)
 - **Git Diff**: All changes (`git diff main...feature-branch`)
 
 ## Outputs
 
-- **Pull Request**: Created on GitHub
-- **PR Description**: Comprehensive documentation
-- **Changelog Entry**: For release notes
-- **Labels**: Appropriate PR labels (feature, bug-fix, etc.)
+1. **`docs/sdlc/{story-id}-pr-description.md`** - PR description file
+   **CRITICAL: Use Write tool to create this file**
+2. **CHANGELOG.md** - Updated with new version entry
+3. **Pull Request**: Created on GitHub (optional, if MCP GitHub configured)
 
 ## PR Description Structure
 
@@ -55,14 +55,14 @@ Required sections:
 ### 1. Analyze Changes
 ```bash
 # Get changed files
-git diff --name-status main...feature-branch
+git diff --name-status main...HEAD
 
 # Get commit history
-git log main...feature-branch --oneline --no-merges
+git log main..HEAD --oneline --no-merges
 
 # Get diff statistics
-git diff --stat main...feature-branch
-git diff --shortstat main...feature-branch
+git diff --stat main...HEAD
+git diff --shortstat main...HEAD
 ```
 
 ### 2. Generate PR Title
@@ -81,99 +81,115 @@ git diff --shortstat main...feature-branch
 **Examples**:
 - `feat(hotel): implement hotel search and booking API`
 - `fix(auth): resolve JWT token expiration issue`
-- `refactor(database): optimize query performance with indexes`
+- `docs(changelog): add comprehensive CHANGELOG for v1.0.0 release`
 
 ### 3. Collect Evidence
-- Read verification-report.md for test results
-- Read code-review.md for approval status
+- Read verification-report.md for test results (if exists)
+- Read code-review.md for approval status (if exists)
 - Capture git diff stats
 - List all affected files by category
 
 ### 4. Generate PR Description
-Use template below, populated with actual data
+Use template structure with actual data from steps 1-3
 
-### 5. Create Pull Request
+### 5. Create Pull Request **AUTOMATICALLY**
+
+**ALWAYS attempt automatic PR creation first:**
+
 ```bash
-# Using GitHub CLI
-gh pr create \
-  --title "feat(hotel): implement hotel search and booking" \
-  --body "$(cat pr-description.md)" \
-  --base main \
-  --head feature/hb-001-hotel-search \
-  --label "feature,high-priority"
+# Method 1: Using GitHub API (PREFERRED - works with token in .env)
+source .env 2>/dev/null || true
 
-# Or output instructions for manual PR creation
+if [ -n "$GITHUB_TOKEN" ]; then
+  # Create PR body JSON file
+  cat > /tmp/pr-body.json << 'EOFPR'
+{
+  "title": "<PR_TITLE>",
+  "head": "<BRANCH_NAME>",
+  "base": "main",
+  "body": "<PR_DESCRIPTION_ESCAPED>"
+}
+EOFPR
+
+  # Create PR via GitHub API
+  curl -X POST \
+    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    -H "Content-Type: application/json" \
+    https://api.github.com/repos/<OWNER>/<REPO>/pulls \
+    -d @/tmp/pr-body.json
+    
+  echo "✅ PR created successfully via GitHub API"
+fi
+
+# Method 2: Using GitHub CLI (if gh is available)
+if command -v gh &> /dev/null; then
+  gh pr create \
+    --title "<PR_TITLE>" \
+    --body-file pr-description.md \
+    --base main \
+    --head <BRANCH_NAME>
+  echo "✅ PR created successfully via GitHub CLI"
+fi
 ```
+
+**If both methods fail**, output instructions for manual PR creation.
+
+## Authentication Requirements
+
+For automatic PR creation, one of the following is required:
+
+1. **GitHub Personal Access Token** in `.env` file:
+   ```
+   GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
+   ```
+
+2. **GitHub CLI** authenticated:
+   ```bash
+   gh auth login
+   ```
 
 ## PR Description Template
 
 ```markdown
-# Hotel Search and Booking API - HB-001
+# <Story Title> - <Story-ID>
 
 ## 📋 Summary
 
-This PR implements the hotel search and booking functionality as specified in user story HB-001. It includes a complete REST API with search filtering, pagination, authentication, booking creation, payment integration, and comprehensive test coverage (87%).
+<2-3 sentence overview of what this PR does>
 
-**User Story**: HB-001  
-**Implements**: Hotel search, filtering, sorting, booking creation  
-**Test Coverage**: 87% (target: 80%) ✅  
-**Performance**: All endpoints <500ms ✅  
+**User Story**: <Story-ID>  
+**Implements**: <Brief list of features>  
+**Test Coverage**: <X>% (target: 80%) ✅  
+**Performance**: <Performance metrics if applicable> ✅  
 
 ---
 
 ## 🎯 User Story
 
-**As a** traveler  
-**I want to** search for hotels by location and dates  
-**So that** I can find and book available accommodations for my trip
+**As a** <user type>  
+**I want to** <goal>  
+**So that** <benefit>
 
-**Story Link**: [HB-001](https://bahuddurshashaik.atlassian.net/browse/HB-001)
+**Story Link**: [<Story-ID>](link-if-available)
 
 ---
 
 ## 🔄 Changes Made
 
-### Backend (15 files changed)
+### Backend/Frontend/Documentation (X files changed)
 
-**Database** (3 files):
-- `prisma/schema.prisma` - Hotel, Room, Booking models with relationships
-- `prisma/migrations/001_initial_schema.sql` - Initial database schema
-- `prisma/seed.ts` - Seed data with 50 sample hotels
+**Added**:
+- List new files/features
 
-**Repositories** (4 files):
-- `src/repositories/base.repository.ts` - Abstract base repository
-- `src/repositories/hotel.repository.ts` - Hotel data access layer
-- `src/repositories/room.repository.ts` - Room data access layer
-- `src/repositories/booking.repository.ts` - Booking data access layer
+**Modified**:
+- List modified files/features
 
-**Services** (3 files):
-- `src/services/hotel.service.ts` - Hotel business logic
-- `src/services/booking.service.ts` - Booking business logic
-- `src/services/auth.service.ts` - JWT authentication
+**Removed**:
+- List removed files/features (if any)
 
-**API** (5 files):
-- `src/routes/hotel.routes.ts` - Hotel endpoints
-- `src/routes/booking.routes.ts` - Booking endpoints
-- `src/controllers/hotel.controller.ts` - Request handling
-- `src/middleware/auth.middleware.ts` - JWT authentication
-- `src/middleware/validation.middleware.ts` - Input validation
-
-### Tests (12 files, 111 tests):
-- `src/services/*.test.ts` - Unit tests for services (45 tests)
-- `src/repositories/*.test.ts` - Unit tests for repositories (22 tests)
-- `tests/integration/hotel.test.ts` - API integration tests (24 tests)
-- `tests/integration/booking.test.ts` - Booking flow tests (20 tests)
-
-### Configuration (3 files):
-- `src/config/database.config.ts` - Database connection settings
-- `src/config/auth.config.ts` - JWT configuration
-- `.env.example` - Environment variable template
-
-### Documentation (2 files):
-- `docs/api/HOTEL_API.md` - API documentation
-- `README.md` - Updated setup instructions
-
-**Total Changes**: 32 files changed, +3,245 lines, -142 lines
+**Total Changes**: X files changed, +Y lines, -Z lines
 
 ---
 
@@ -181,82 +197,34 @@ This PR implements the hotel search and booking functionality as specified in us
 
 ### Unit Tests
 ```
-Test Suites: 12 passed, 12 total
-Tests:       87 passed, 87 total
-Time:        15.234s
+Test Suites: X passed, X total
+Tests:       Y passed, Y total
+Time:        Z seconds
 ```
 
 ### Integration Tests
 ```
-API Tests: 24 passed, 24 total
-Scenarios: Registration → Login → Search → Booking (E2E)
-Time: 8.456s
+API Tests: X passed, X total
+Scenarios: <Key test scenarios>
+Time: Y seconds
 ```
 
 ### Code Coverage
 ```
-Statements   : 87.5% (target: 80%) ✅
-Branches     : 82.3% (target: 75%) ✅
-Functions    : 91.2% (target: 80%) ✅
-Lines        : 86.8% (target: 80%) ✅
-```
-
-### Security Scan
-```
-$ npm audit
-found 0 vulnerabilities ✅
-```
-
----
-
-## ⚡ Performance
-
-### Response Times (95th percentile)
-- GET `/api/hotels` (search): 287ms ✅ (target: <500ms)
-- POST `/api/bookings`: 412ms ✅ (target: <1s)
-- POST `/api/auth/login`: 156ms ✅ (target: <300ms)
-
-### Load Test Results (10K concurrent users)
-```
-Requests completed: 40,000
-Mean response time: 324ms ✅
-95th percentile: 892ms ✅
-99th percentile: 1.2s ✅
-Errors: 0 ✅
+Statements   : X% (target: 80%) ✅
+Branches     : Y% (target: 75%) ✅
+Functions    : Z% (target: 80%) ✅
+Lines        : W% (target: 80%) ✅
 ```
 
 ---
 
 ## 🔒 Security
 
-- ✅ No hardcoded secrets (all in environment variables)
+- ✅ No hardcoded secrets
 - ✅ Input validation on all endpoints
-- ✅ SQL injection prevention (parameterized queries via Prisma)
-- ✅ JWT authentication with 15-minute access tokens
-- ✅ Rate limiting: 100 requests/minute
-- ✅ HTTPS enforced
-- ✅ CORS configured for specific origins
-
-**Security Scan**: 0 vulnerabilities found
-
----
-
-## 📸 Screenshots
-
-(Not applicable - backend API only)
-
----
-
-## ⚠️ Known Limitations
-
-**Out of Scope** (documented in requirements):
-- Multi-language support (planned for Phase 2)
-- Mobile native apps (web-only for Phase 1)
-- Loyalty program integration (future enhancement)
-- Advanced filters (pet-friendly, parking) - can be added incrementally
-
-**Technical Debt**:
-- None introduced - all code follows standards
+- ✅ Authentication checks
+- ✅ Security scan: 0 vulnerabilities
 
 ---
 
@@ -265,97 +233,52 @@ Errors: 0 ✅
 Please verify the following before approving:
 
 ### Functionality
-- [ ] Hotel search returns results for valid location/dates
-- [ ] Search filters work (price, rating, amenities)
-- [ ] Pagination works correctly
-- [ ] Booking creation succeeds for authenticated users
-- [ ] Authentication required for protected endpoints
+- [ ] Feature works as described
+- [ ] Edge cases handled
+- [ ] Error handling present
 
 ### Code Quality
 - [ ] Code follows project conventions
 - [ ] No hardcoded values or secrets
-- [ ] Error handling present on all endpoints
-- [ ] Input validation on all user inputs
 - [ ] Tests cover happy path and edge cases
 
 ### Security
-- [ ] Authentication checks on protected routes
+- [ ] Authentication checks present
 - [ ] Input validation prevents injection
 - [ ] Secrets in environment variables
-- [ ] Rate limiting configured
-
-### Performance
-- [ ] Database queries optimized (no N+1)
-- [ ] Indexes on frequently queried fields
-- [ ] Response times meet targets
-- [ ] Load test passed
 
 ### Documentation
 - [ ] API endpoints documented
-- [ ] Environment variables documented in .env.example
-- [ ] README updated with setup instructions
+- [ ] README updated (if needed)
+- [ ] Comments clear and helpful
 
 ---
 
 ## 🔗 Related Links
 
-- **User Story**: [HB-001](https://bahuddurshashaik.atlassian.net/browse/HB-001)
-- **Requirements Doc**: `docs/requirements/hb-001-requirements.md`
-- **Architecture Doc**: `docs/architecture/hb-001-architecture.md`
-- **Verification Report**: `docs/verification/hb-001-verification-report.md`
-- **Confluence**: [Hotel Booking Project](https://bahuddurshashaik.atlassian.net/wiki/spaces/ClaudeCpas)
+- **User Story**: [<Story-ID>](link)
+- **Requirements Doc**: `docs/sdlc/<story-id>-requirements.md`
+- **Architecture Doc**: `docs/sdlc/<story-id>-architecture.md`
+- **Verification Report**: `docs/sdlc/<story-id>-verification.md`
 
 ---
 
 ## 🚀 Deployment Notes
 
-### Environment Variables Required
-```
-DATABASE_URL=postgresql://user:pass@localhost:5432/hoteldb
-JWT_SECRET=<generate-secure-secret>
-JWT_EXPIRY=15m
-REDIS_URL=redis://localhost:6379
-STRIPE_API_KEY=<stripe-secret-key>
-PORT=3000
-NODE_ENV=production
-```
-
-### Database Migration
-```bash
-# Run migration
-npx prisma migrate deploy
-
-# Seed initial data (optional)
-npm run seed
-```
-
-### Post-Deployment Verification
-- [ ] Run smoke tests: `npm run test:smoke`
-- [ ] Verify health endpoint: `GET /health`
-- [ ] Check database connectivity
-- [ ] Verify Redis connection
-- [ ] Test authentication flow
+<If applicable, include deployment steps and post-deployment verification>
 
 ---
 
 ## 📊 Changelog
 
 ### Added
-- Hotel search API with filtering and pagination
-- Booking creation API with authentication
-- JWT authentication system
-- Database schema for hotels, rooms, bookings
-- Comprehensive test suite (111 tests)
-- Input validation middleware
-- Rate limiting middleware
-- API documentation
+- <List what was added>
 
 ### Changed
-- Updated project structure for scalability
-- Enhanced error handling across all endpoints
+- <List what was changed>
 
 ### Fixed
-- None (new feature)
+- <List what was fixed>
 
 ---
 
@@ -373,13 +296,25 @@ Before creating PR:
 - [ ] Summary is clear and concise
 - [ ] All changes documented by category
 - [ ] Test evidence included with metrics
-- [ ] Performance benchmarks included (if applicable)
 - [ ] Security considerations documented
 - [ ] Known limitations listed
 - [ ] Reviewer checklist comprehensive
 - [ ] Related links provided
-- [ ] Deployment notes included
 - [ ] Changelog entry created
+- [ ] **PR AUTOMATICALLY CREATED** ✅
+
+## Expected Behavior
+
+When this agent is invoked:
+
+1. ✅ Analyze git changes
+2. ✅ Generate PR title and description
+3. ✅ Collect test evidence and metrics
+4. ✅ Create PR description file
+5. ✅ **AUTOMATICALLY CREATE PR on GitHub**
+6. ✅ Return PR URL
+
+**The agent MUST attempt automatic PR creation.** Only fall back to manual instructions if authentication is not available.
 
 ## Final Step
 
@@ -393,4 +328,4 @@ The workflow has gone through all 8 phases:
 5. ✅ Implementation
 6. ✅ Code Review
 7. ✅ Verification
-8. ✅ Pull Request
+8. ✅ Pull Request - **AUTOMATICALLY CREATED**

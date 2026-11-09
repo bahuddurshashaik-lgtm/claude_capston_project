@@ -1,200 +1,91 @@
-// Main Application - Demonstrates all 5 user stories
+/**
+ * Express Application
+ * Main application setup with complete middleware pipeline
+ * HB-001: Hotel Search and Browse
+ *
+ * CRITICAL FIXES:
+ * - M-3 FIX: API versioning with /api/v1/ prefix
+ * - M-5 FIX: CORS middleware properly configured
+ */
 
-const HotelService = require('./services/HotelService');
-const BookingService = require('./services/BookingService');
-const PaymentService = require('./services/PaymentService');
-const UserService = require('./services/UserService');
-const { sampleHotels, sampleUsers } = require('./data/sampleData');
+const express = require('express');
+const { applyCors, applyHelmet, securityHeaders, requestLogger } = require('./middleware/security');
+const { apiLimiter } = require('./middleware/rateLimiter');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const routes = require('./routes');
+const { createLogger } = require('./utils/logger');
 
-class HotelBookingApp {
-  constructor() {
-    // Initialize services
-    this.hotelService = new HotelService();
-    this.bookingService = new BookingService(this.hotelService);
-    this.paymentService = new PaymentService(this.bookingService);
-    this.userService = new UserService();
+const logger = createLogger('app');
 
-    // Load sample data
-    this.loadSampleData();
+/**
+ * Create and configure Express application
+ * @returns {Object} - Configured Express app
+ */
+function createApp() {
+  const app = express();
+
+  // Trust proxy (required for rate limiting and IP detection behind proxies)
+  app.set('trust proxy', 1);
+
+  // ========================================
+  // SECURITY MIDDLEWARE (M-5 FIX)
+  // ========================================
+
+  // Helmet - Sets various HTTP headers for security
+  app.use(applyHelmet);
+
+  // CORS - Cross-Origin Resource Sharing (M-5 FIX - CRITICAL)
+  app.use(applyCors);
+
+  // Custom security headers
+  app.use(securityHeaders);
+
+  // ========================================
+  // BODY PARSING MIDDLEWARE
+  // ========================================
+
+  // Parse JSON request bodies
+  app.use(express.json({ limit: '10mb' }));
+
+  // Parse URL-encoded request bodies
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+  // ========================================
+  // LOGGING MIDDLEWARE
+  // ========================================
+
+  // Request logging for security monitoring
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(requestLogger);
   }
 
-  loadSampleData() {
-    // Load sample hotels
-    sampleHotels.forEach(hotel => this.hotelService.addHotel(hotel));
+  // ========================================
+  // RATE LIMITING MIDDLEWARE
+  // ========================================
 
-    // Register sample users
-    sampleUsers.forEach(user => this.userService.register(user));
+  // General API rate limiter (100 req/min per IP)
+  app.use(apiLimiter);
 
-    console.log('✅ Sample data loaded successfully');
-  }
+  // ========================================
+  // ROUTES (M-3 FIX: /api/v1/ prefix)
+  // ========================================
 
-  // ===== HB-001: Hotel Search and Browse =====
-  searchHotels(filters) {
-    console.log('\n🔍 HB-001: Searching hotels...', filters);
-    const results = this.hotelService.searchHotels(filters);
-    console.log(`Found ${results.length} hotels`);
-    return results;
-  }
+  // Mount all routes
+  app.use('/', routes);
 
-  // ===== HB-002: Hotel Booking and Reservation =====
-  createBooking(userId, hotelId, checkInDate, checkOutDate, guests) {
-    console.log('\n📅 HB-002: Creating booking...');
-    const result = this.bookingService.createBooking({
-      userId,
-      hotelId,
-      checkInDate,
-      checkOutDate,
-      guests
-    });
+  // ========================================
+  // ERROR HANDLING MIDDLEWARE
+  // ========================================
 
-    if (result.success) {
-      console.log('✅ Booking created successfully:', result.booking.id);
-    } else {
-      console.log('❌ Booking failed:', result.error);
-    }
-    return result;
-  }
+  // 404 handler - must come after all routes
+  app.use(notFoundHandler);
 
-  // ===== HB-003: Payment Processing =====
-  processPayment(bookingId, paymentMethod, cardNumber = null) {
-    console.log('\n💳 HB-003: Processing payment...');
-    const result = this.paymentService.processPayment({
-      bookingId,
-      paymentMethod,
-      cardNumber
-    });
+  // Centralized error handler - must be last
+  app.use(errorHandler);
 
-    if (result.success) {
-      console.log('✅ Payment processed:', result.transactionId);
-    } else {
-      console.log('❌ Payment failed:', result.error);
-    }
-    return result;
-  }
+  logger.info('Express application configured successfully');
 
-  // ===== HB-004: User Authentication and Profiles =====
-  registerUser(userData) {
-    console.log('\n👤 HB-004: Registering user...');
-    const result = this.userService.register(userData);
-
-    if (result.success) {
-      console.log('✅ User registered:', result.user.email);
-    } else {
-      console.log('❌ Registration failed:', result.error);
-    }
-    return result;
-  }
-
-  loginUser(email, password) {
-    console.log('\n🔐 HB-004: Logging in user...');
-    const result = this.userService.login(email, password);
-
-    if (result.success) {
-      console.log('✅ Login successful:', result.user.email);
-    } else {
-      console.log('❌ Login failed:', result.error);
-    }
-    return result;
-  }
-
-  // ===== HB-005: Booking Management and Cancellation =====
-  viewUserBookings(userId) {
-    console.log('\n📋 HB-005: Viewing user bookings...');
-    const bookings = this.bookingService.getUserBookings(userId);
-    console.log(`Found ${bookings.length} bookings`);
-    return bookings;
-  }
-
-  modifyBooking(bookingId, updates) {
-    console.log('\n✏️ HB-005: Modifying booking...');
-    const result = this.bookingService.modifyBooking(bookingId, updates);
-
-    if (result.success) {
-      console.log('✅ Booking modified successfully');
-    } else {
-      console.log('❌ Modification failed:', result.error);
-    }
-    return result;
-  }
-
-  cancelBooking(bookingId) {
-    console.log('\n❌ HB-005: Cancelling booking...');
-    const result = this.bookingService.cancelBooking(bookingId);
-
-    if (result.success) {
-      console.log('✅ Booking cancelled');
-      // Process refund
-      const refund = this.paymentService.refundPayment(bookingId);
-      if (refund.success) {
-        console.log('✅ Refund processed:', refund.refundId);
-      }
-    } else {
-      console.log('❌ Cancellation failed:', result.error);
-    }
-    return result;
-  }
-
-  // Demo all user stories
-  runDemo() {
-    console.log('\n' + '='.repeat(50));
-    console.log('🏨 Hotel Booking System - Complete Demo');
-    console.log('='.repeat(50));
-
-    // HB-001: Search Hotels
-    const hotels = this.searchHotels({ location: 'New York', minRating: 4.0 });
-
-    // HB-004: Register & Login
-    const newUser = this.registerUser({
-      email: 'demo.user@example.com',
-      password: 'DemoPass123',
-      firstName: 'Demo',
-      lastName: 'User',
-      phone: '555-9999'
-    });
-
-    const login = this.loginUser('demo.user@example.com', 'DemoPass123');
-
-    // HB-002: Create Booking
-    const booking = this.createBooking(
-      newUser.user.id,
-      1,
-      '2026-12-01',
-      '2026-12-05',
-      2
-    );
-
-    // HB-003: Process Payment
-    if (booking.success) {
-      this.processPayment(
-        booking.booking.id,
-        'credit_card',
-        '4532015112830366'
-      );
-    }
-
-    // HB-005: View, Modify, and Cancel Bookings
-    this.viewUserBookings(newUser.user.id);
-
-    if (booking.success) {
-      this.modifyBooking(booking.booking.id, {
-        checkOutDate: '2026-12-06',
-        guests: 3
-      });
-
-      // Uncomment to test cancellation
-      // this.cancelBooking(booking.booking.id);
-    }
-
-    console.log('\n' + '='.repeat(50));
-    console.log('✅ Demo completed successfully!');
-    console.log('='.repeat(50) + '\n');
-  }
+  return app;
 }
 
-// Run the application
-if (require.main === module) {
-  const app = new HotelBookingApp();
-  app.runDemo();
-}
-
-module.exports = HotelBookingApp;
+module.exports = createApp;

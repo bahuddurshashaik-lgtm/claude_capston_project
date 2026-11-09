@@ -22,13 +22,14 @@ Design high-level system architecture based on approved requirements, recommendi
 
 ## Inputs
 
-- `docs/requirements/{story-id}-requirements.md` - From Requirements Agent
+- `docs/sdlc/{story-id}-requirements.md` - From Requirements Agent
 - Existing architecture (if applicable)
 - Technology constraints (if specified)
 
 ## Outputs
 
-Generate `docs/architecture/{story-id}-architecture.md` with:
+Generate `docs/sdlc/{story-id}-architecture.md` with:
+**CRITICAL: Use Write tool to create this file**
 - System overview
 - Component architecture with responsibilities
 - Technology stack recommendations

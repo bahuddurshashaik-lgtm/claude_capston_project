@@ -24,13 +24,14 @@ Conduct comprehensive code review of all implementation changes, identifying iss
 ## Inputs
 
 - **Git Diff**: All changes since feature branch created (`git diff main...feature-branch`)
-- `docs/implementation-plan/{story-id}-impl-plan.md` - Original plan
-- `docs/requirements/{story-id}-requirements.md` - Requirements to validate
+- `docs/sdlc/{story-id}-impl-plan.md` - Original plan
+- `docs/sdlc/{story-id}-requirements.md` - Requirements to validate
 - **Test Results**: Unit and integration test outcomes
 
 ## Outputs
 
-Generate `docs/code-review/{story-id}-code-review.md` with:
+Generate `docs/sdlc/{story-id}-code-review.md` with:
+**CRITICAL: Use Write tool to create this file**
 - Review summary and approval status
 - Categorized findings across 7 areas
 - Specific file/line references

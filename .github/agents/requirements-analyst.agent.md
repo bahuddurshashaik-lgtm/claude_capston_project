@@ -79,10 +79,10 @@ When invoked with a user story (ID, URL, or file path):
    - Track with unique IDs (RISK-001, etc.)
 
 9. **Generate Output**
-   - Create `docs/requirements/{story-id}-requirements.md`
-   - Create `docs/requirements/{story-id}-requirements.json`
+   - Create `docs/sdlc/{story-id}-requirements.md`
    - Format as structured markdown with sections
    - Include metadata (version, date, author)
+   - CRITICAL: You MUST use the Write tool to create the file
 
 ## Output Format
 
@@ -159,7 +159,7 @@ Requirements Agent:
 6. Generates 15-20 clarifying questions across 4 categories
 7. Defines success criteria
 8. Documents 3-5 risks with mitigation
-9. Saves to docs/requirements/hb-001-requirements.md
+9. Saves to docs/sdlc/hb-001-requirements.md using Write tool
 10. Requests approval to proceed
 ```
 
@@ -167,7 +167,7 @@ Requirements Agent:
 
 - **Input:** User story ID, URL, or file path
 - **MCP Tools:** Use Confluence MCP to fetch stories
-- **Output:** requirements.md and requirements.json files
+- **Output:** {story-id}-requirements.md file in docs/sdlc/
 - **Next Agent:** Architecture Agent (uses requirements as input)
 
 ## Quality Standards

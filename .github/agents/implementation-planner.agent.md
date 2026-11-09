@@ -21,13 +21,14 @@ Transform approved architecture into granular, dependency-ordered implementation
 
 ## Inputs
 
-- `docs/architecture/{story-id}-architecture.md` - Approved architecture
-- `docs/design-review/{story-id}-design-review.md` - With approved status
-- `docs/requirements/{story-id}-requirements.md` - Original requirements
+- `docs/sdlc/{story-id}-architecture.md` - Approved architecture
+- `docs/sdlc/{story-id}-design-review.md` - With approved status
+- `docs/sdlc/{story-id}-requirements.md` - Original requirements
 
 ## Outputs
 
-Generate `docs/implementation-plan/{story-id}-impl-plan.md` with:
+Generate `docs/sdlc/{story-id}-impl-plan.md` with:
+**CRITICAL: Use Write tool to create this file**
 - Task breakdown (each 1-4 hours)
 - Dependency graph
 - Priority ordering (P0, P1, P2, P3)

@@ -25,13 +25,14 @@ Generate complete test suite, run all verification checks (tests, coverage, lint
 
 - **Source Code**: All implementation files
 - **Existing Tests**: Unit and integration tests
-- `docs/requirements/{story-id}-requirements.md` - Requirements to verify
-- `docs/code-review/{story-id}-code-review.md` - Review findings
+- `docs/sdlc/{story-id}-requirements.md` - Requirements to verify
+- `docs/sdlc/{story-id}-code-review.md` - Review findings
 - **Coverage Threshold**: 80% (configurable)
 
 ## Outputs
 
-Generate `docs/verification/{story-id}-verification-report.md` with:
+Generate `docs/sdlc/{story-id}-verification.md` with:
+**CRITICAL: Use Write tool to create this file**
 - Test results (pass/fail counts)
 - Coverage metrics (statements, branches, functions, lines)
 - Code quality report (ESLint, Prettier)

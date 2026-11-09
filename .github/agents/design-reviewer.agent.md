@@ -21,13 +21,14 @@ Conduct comprehensive design review of proposed architecture, identify risks and
 
 ## Inputs
 
-- `docs/architecture/{story-id}-architecture.md` - From Architecture Agent
-- `docs/requirements/{story-id}-requirements.md` - Original requirements
+- `docs/sdlc/{story-id}-architecture.md` - From Architecture Agent
+- `docs/sdlc/{story-id}-requirements.md` - Original requirements
 - Standard review checklist (below)
 
 ## Outputs
 
-Generate `docs/design-review/{story-id}-design-review.md` with:
+Generate `docs/sdlc/{story-id}-design-review.md` with:
+**CRITICAL: Use Write tool to create this file**
 - Review summary and approval status
 - Categorized findings (Critical/High/Medium/Low)
 - Requirements validation matrix

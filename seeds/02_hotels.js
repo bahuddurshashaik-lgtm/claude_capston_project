@@ -105,5 +105,5 @@ exports.seed = async function(knex) {
   await knex('hotel_amenities').insert(hotelAmenities);
 
   // Reset sequences
-  await knex.raw("SELECT setval('hotels_id_seq', (SELECT MAX(id) FROM hotels));");
+  // Reset sequence (PostgreSQL only, not needed for SQLite)
 };

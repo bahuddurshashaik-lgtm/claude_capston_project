@@ -11,10 +11,9 @@ exports.up = async function(knex) {
     table.string('name', 50).notNullable().unique();
     table.string('icon', 50);
     table.integer('display_order').defaultTo(0);
-  });
 
-  // Create index on name for lookups
-  await knex.raw('CREATE INDEX idx_amenities_name ON amenities(name);');
+    table.index('name', 'idx_amenities_name');
+  });
 
   // Create hotel_amenities junction table
   await knex.schema.createTable('hotel_amenities', (table) => {
@@ -34,11 +33,10 @@ exports.up = async function(knex) {
       .references('id')
       .inTable('amenities')
       .onDelete('CASCADE');
-  });
 
-  // Create indexes on foreign keys for performance
-  await knex.raw('CREATE INDEX idx_hotel_amenities_hotel ON hotel_amenities(hotel_id);');
-  await knex.raw('CREATE INDEX idx_hotel_amenities_amenity ON hotel_amenities(amenity_id);');
+    table.index('hotel_id', 'idx_hotel_amenities_hotel');
+    table.index('amenity_id', 'idx_hotel_amenities_amenity');
+  });
 };
 
 exports.down = async function(knex) {

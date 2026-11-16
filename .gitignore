@@ -51,3 +51,11 @@ src/mcp-servers/**/secrets/
 
 # GitHub Token
 .github-token
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Analytics
+docs/codemie/analytics/

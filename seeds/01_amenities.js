@@ -21,6 +21,5 @@ exports.seed = async function(knex) {
     { id: 10, name: 'Air Conditioning', icon: 'ac', display_order: 10 }
   ]);
 
-  // Reset sequence
-  await knex.raw("SELECT setval('amenities_id_seq', (SELECT MAX(id) FROM amenities));");
+  // Reset sequence (PostgreSQL only, not needed for SQLite)
 };

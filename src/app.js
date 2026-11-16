@@ -9,6 +9,7 @@
  */
 
 const express = require('express');
+const path = require('path');
 const { applyCors, applyHelmet, securityHeaders, requestLogger } = require('./middleware/security');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
@@ -65,6 +66,13 @@ function createApp() {
 
   // General API rate limiter (100 req/min per IP)
   app.use(apiLimiter);
+
+  // ========================================
+  // STATIC FILES - Serve frontend
+  // ========================================
+
+  // Serve static files from public directory
+  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   // ========================================
   // ROUTES (M-3 FIX: /api/v1/ prefix)

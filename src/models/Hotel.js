@@ -1,48 +1,69 @@
-// HB-001: Hotel Search and Browse - Hotel Model
+/**
+ * Hotel Model
+ * Entity class representing a hotel with transformation methods
+ * HB-001: Hotel Search and Browse
+ */
 
 class Hotel {
-  constructor(id, name, location, pricePerNight, rating, amenities, availability) {
-    this.id = id;
-    this.name = name;
-    this.location = location;
-    this.pricePerNight = pricePerNight;
-    this.rating = rating;
-    this.amenities = amenities || [];
-    this.availability = availability !== undefined ? availability : true;
+  /**
+   * Create a Hotel instance
+   * @param {Object} data - Hotel data from database
+   */
+  constructor(data) {
+    this.id = data.id;
+    this.name = data.name;
+    this.description = data.description;
+    this.city = data.city;
+    this.region = data.region;
+    this.address = data.address;
+    this.pricePerNight = parseFloat(data.price_per_night);
+    this.rating = data.rating ? parseFloat(data.rating) : null;
+    this.isActive = data.is_active;
+    this.createdAt = data.created_at;
+    this.updatedAt = data.updated_at;
+    this.amenities = data.amenities || [];
   }
 
-  // Search hotel by location
-  static searchByLocation(hotels, location) {
-    return hotels.filter(hotel =>
-      hotel.location.toLowerCase().includes(location.toLowerCase())
-    );
+  /**
+   * Transform hotel instance to JSON response format
+   * Converts snake_case database fields to camelCase API fields
+   * @returns {Object} - JSON representation of hotel
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      location: {
+        city: this.city,
+        region: this.region,
+        address: this.address
+      },
+      pricePerNight: this.pricePerNight,
+      rating: this.rating,
+      amenities: this.amenities,
+      isActive: this.isActive,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
   }
 
-  // Filter by price range
-  static filterByPrice(hotels, minPrice, maxPrice) {
-    return hotels.filter(hotel =>
-      hotel.pricePerNight >= minPrice && hotel.pricePerNight <= maxPrice
-    );
+  /**
+   * Create Hotel instance from database row
+   * @param {Object} row - Database row
+   * @returns {Hotel} - Hotel instance
+   */
+  static fromDatabase(row) {
+    return new Hotel(row);
   }
 
-  // Filter by rating
-  static filterByRating(hotels, minRating) {
-    return hotels.filter(hotel => hotel.rating >= minRating);
-  }
-
-  // Sort hotels
-  static sortHotels(hotels, sortBy = 'price') {
-    const sorted = [...hotels];
-    switch(sortBy) {
-      case 'price-asc':
-        return sorted.sort((a, b) => a.pricePerNight - b.pricePerNight);
-      case 'price-desc':
-        return sorted.sort((a, b) => b.pricePerNight - a.pricePerNight);
-      case 'rating':
-        return sorted.sort((a, b) => b.rating - a.rating);
-      default:
-        return sorted;
-    }
+  /**
+   * Create multiple Hotel instances from database rows
+   * @param {Array} rows - Array of database rows
+   * @returns {Array<Hotel>} - Array of Hotel instances
+   */
+  static fromDatabaseArray(rows) {
+    return rows.map(row => Hotel.fromDatabase(row));
   }
 }
 
